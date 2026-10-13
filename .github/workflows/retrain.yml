@@ -1,0 +1,37 @@
+# Scheduled retraining check (documented exception: scheduled GitHub Actions run)
+name: Scheduled Retraining
+
+on:
+  # Every Monday at 13:07 UTC (8:07 AM Central); GitHub schedules run in UTC
+  schedule:
+    - cron: "7 13 * * 1"
+  # Adds a manual "Run workflow" button on GitHub
+  workflow_dispatch:
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    steps:
+      # Download the repository onto GitHub's server
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # Match the project's Python version
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements-ci.txt
+
+      # Retrains only if accuracy on the newest batch is below the threshold
+      - name: Check accuracy and retrain if needed
+        run: python retrain.py
+
+      # Keep the resulting model file for download from the run's page
+      - name: Save model artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: churn-model
+          path: models/churn_model.pkl

@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+pandas
+joblib
+scikit-learn==1.9.1
+imbalanced-learn==0.14.2
